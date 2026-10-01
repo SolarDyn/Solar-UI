@@ -6,6 +6,7 @@
 using NuclearOption.UIStyleSystem;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 #endregion
 
@@ -117,6 +118,79 @@ public static class Draw
         {
             textComponent.fontSize = fontSize;
             // containerRect.sizeDelta = new Vector2(textComponent.preferredWidth, textComponent.fontSize);
+        }
+    }
+
+    public class UILine : UIElement
+    {
+        public Image imageComponent;
+        public ImageStyleApplier imageStyleApplier;
+        public Vector2 start;
+        public Vector2 end;
+        public float thickness;
+
+        public UILine(
+            string name,
+            Transform parent,
+            Vector2 start,
+            Vector2 end,
+            Color? color = null,
+            float thickness = 2f,
+            ThemeManager.ThemeContext themeContext = ThemeManager.ThemeContext.HUD,
+            StyleLabel? styleLabel = null,
+            string text = "") : base(name, parent, (start + end)/2f)
+        {
+            this.start = start;
+            this.end = end;
+            this.thickness = thickness;
+
+            Vector2 direction = end - start;
+            float length = direction.magnitude;
+
+            imageComponent = container.AddComponent<Image>();
+            imageComponent.color = color ?? Color.white;
+            imageComponent.material = Assets.MaterialDefaultHUD;
+            // imageComponent.rectTransform.sizeDelta = new Vector2(thickness, thickness);
+
+            containerRect.sizeDelta = new Vector2(length, thickness);
+            containerRect.pivot = Vector2.one * 0.5f;
+
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            containerRect.localRotation = Quaternion.Euler(0, 0, angle);
+
+            imageStyleApplier = container.AddComponent<ImageStyleApplier>();
+            imageStyleApplier.Context = themeContext;
+            imageStyleApplier.styleLabel =
+                styleLabel ?? Assets.StyleLabels[ThemeManager.ThemeContext.HUD]["HUD_TextMainColor"];
+        }
+
+        public void SetColor(Color color)
+        {
+            imageComponent.color = color;
+        }
+
+        public void SetThickness(float thickness)
+        {
+            this.thickness = thickness;
+            UpdateGeometry();
+        }
+
+        public void SetCoordinates(Vector2 start, Vector2 end)
+        {
+            this.start = start;
+            this.end = end;
+            UpdateGeometry();
+        }
+
+        public void UpdateGeometry()
+        {
+            Vector2 direction = end - start;
+            float length = direction.magnitude;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+
+            containerRect.sizeDelta = new Vector2(length, thickness);
+            containerRect.anchoredPosition = (start + end) / 2f;
+            containerRect.localRotation = Quaternion.Euler(0, 0, angle);
         }
     }
 }
